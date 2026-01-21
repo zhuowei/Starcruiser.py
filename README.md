@@ -60,3 +60,9 @@ I0000 00:00:1768966235.970663 104365412 fork_posix.cc:71] Other threads are curr
 Service(handle=0x0086, uuid=UUID-16:FD5F) Characteristic(handle=0x0088, uuid=05ACBE9F-6F61-4CA9-80BF-C8BBB52991C0, READ) 128
 CoC(64->71, State=CONNECTED, PSM=128, MTU=2048/65535, MPS=2048/27, credits=65535/256)
 ```
+
+If you need to re-pair, can use the public address instead:
+
+```
+bumble-pair device.json android-netsim "BB:BB:BB:00:00:02/P@"
+```

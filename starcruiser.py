@@ -7,7 +7,7 @@ from bumble.colors import color
 from bumble.device import Connection, Device, DeviceConfiguration
 from bumble.l2cap import ClassicChannelSpec
 
-from com.oculus.atc import atc_pb2
+from datax import Datax
 
 hci_transport = "android-netsim"
 device_config = "device.json"
@@ -15,32 +15,6 @@ address = "BB:BB:BB:00:00:02/P@"
 
 FB_PSM_SERVICE_UUID = "FD5F"
 FB_PSM_CHARACTERISTIC_UUID = "05ACBE9F-6F61-4CA9-80BF-C8BBB52991C0"
-
-
-async def airshield_handshake(channel: l2cap.LeCreditBasedChannel):
-    # send initial request encryption packet...
-    request = atc_pb2.RequestEncryption(
-        public_key=
-        b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        challenge=b"0123456789abcdef",
-        elliptic_curve=0,
-        supported_parameters=31)
-    proto_data = request.SerializeToString()
-    header = bytes([
-        0x80,
-        len(proto_data) + 4,
-        0x80,
-        0x01,
-        0x81,
-        0x00,
-        0x00,
-        0x05,
-        0x02,
-        0x00,
-        0x00,
-        0x01,
-    ])
-    channel.write(header + proto_data)
 
 
 async def get_fb_psm(connection: Connection) -> int:
@@ -58,7 +32,7 @@ async def get_fb_psm(connection: Connection) -> int:
 
 
 async def main():
-    bumble.logging.setup_basic_logging("DEBUG")
+    bumble.logging.setup_basic_logging("INFO")
     async with await transport.open_transport(hci_transport) as (
             hci_source,
             hci_sink,
@@ -66,6 +40,7 @@ async def main():
         device = Device.from_config_file_with_hci(device_config, hci_source,
                                                   hci_sink)
         await device.power_on()
+        rethrow_exception = None
         async with await device.connect(
                 address,
                 transport=core.PhysicalTransport.LE,
@@ -75,8 +50,15 @@ async def main():
             channel = await connection.create_l2cap_channel(
                 l2cap.LeCreditBasedChannelSpec(psm=fb_psm_port))
             print(channel)
-            await airshield_handshake(channel)
-            await asyncio.sleep(1)
+            try:
+                datax = Datax(channel)
+                datax.send_initial_request_encryption_packet()
+                await asyncio.sleep(5)
+            except Exception as e:
+                # Bumble doesn't close the connection on exception; why...
+                rethrow_exception = e
+        if rethrow_exception is not None:
+            raise rethrow_exception
 
 
 asyncio.run(main())
