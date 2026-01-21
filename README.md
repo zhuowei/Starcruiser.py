@@ -5,6 +5,10 @@ Currently doesn't do anything other than attempt to make a connection.
 Only tested with SimStella on Android Emulator so far, not with the emulated Meta Ray-Ban firmware or a real Meta Ray-Ban.
 
 ```
+./gen_proto.sh
+```
+
+```
 $ bumble-scan --device-config device.json android-netsim
 <<< connecting to HCI...
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
