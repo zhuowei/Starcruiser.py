@@ -48,7 +48,7 @@ async def main():
             await connection.encrypt()
             fb_psm_port = await get_fb_psm(connection)
             channel = await connection.create_l2cap_channel(
-                l2cap.LeCreditBasedChannelSpec(psm=fb_psm_port))
+                l2cap.LeCreditBasedChannelSpec(psm=fb_psm_port, mtu=0xffff))
             print(channel)
             try:
                 datax = Datax(channel)

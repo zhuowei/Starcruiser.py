@@ -25,8 +25,8 @@ class Datax:
     # TODO(zhuowei): handle Wi-Fi and RFCOMM
     def __init__(self, channel: l2cap.LeCreditBasedChannel):
         self.channel = channel
-        self.encryption_has_initial_40 = True
-        self.multiplexing_enabled = True
+        self.encryption_has_initial_40 = False
+        self.multiplexing_enabled = False
         channel.sink = self.handle_received_packet
 
     def public_key_bytes(self) -> bytes:
@@ -62,7 +62,7 @@ class Datax:
         proto_data = request.SerializeToString()
         header = bytes([
             0x80,
-            len(proto_data) + 4,
+            len(proto_data) + 8,
             0x80,
             0x01,
             0x81,
